@@ -1,0 +1,216 @@
+/// Order-line fact table. Each row represents one product line within an order.
+table FactSales
+	lineageTag: a1cdccf2-dc52-4654-bf7e-ecba82610737
+
+	/// Total sales revenue across the current filter context.
+	measure 'Total Sales' = SUM ( 'FactSales'[Sales] )
+		formatString: $#,##0.00
+		displayFolder: Sales
+		lineageTag: 35b9980a-8f4a-4ccc-9232-392a20fc68b8
+
+	/// Total profit after discounts and other row-level profitability effects.
+	measure 'Total Profit' = SUM ( 'FactSales'[Profit] )
+		formatString: $#,##0.00
+		displayFolder: Profitability
+		lineageTag: ae832ba7-76a8-4e2d-a6f2-c6803cb02cdb
+
+	/// Total units sold across all order lines in the current filter context.
+	measure 'Total Quantity' = SUM ( 'FactSales'[Quantity] )
+		formatString: #,##0
+		displayFolder: Sales
+		lineageTag: d47bb39c-968f-4cd5-b56b-cac816eb611b
+
+	/// Distinct customer orders based on Order ID, independent of line-item count.
+	measure 'Order Count' = DISTINCTCOUNT ( 'FactSales'[Order ID] )
+		formatString: #,##0
+		displayFolder: Orders
+		lineageTag: 363a80a8-148e-446e-8d26-75e390116694
+
+	/// Distinct customers represented in the current filter context.
+	measure 'Customer Count' = DISTINCTCOUNT ( 'FactSales'[Customer ID] )
+		formatString: #,##0
+		displayFolder: Customer Analysis
+		lineageTag: 152170e7-2375-4c86-bd09-679eb06bf8f1
+
+	/// Distinct products represented in the current filter context.
+	measure 'Product Count' = DISTINCTCOUNT ( 'FactSales'[Product ID] )
+		formatString: #,##0
+		displayFolder: Sales
+		lineageTag: e677be98-48c3-45a8-a3db-b5940ae56b43
+
+	/// Profit as a percentage of sales in the current filter context.
+	measure 'Profit Margin' = DIVIDE ( [Total Profit], [Total Sales] )
+		formatString: 0.00%
+		displayFolder: Profitability
+		lineageTag: 48fcb28d-65cf-4d00-a7d7-a54dc1f809af
+
+	/// Average sales value per distinct customer order.
+	measure 'Average Order Value' = DIVIDE ( [Total Sales], [Order Count] )
+		formatString: $#,##0.00
+		displayFolder: Orders
+		lineageTag: af7d5072-57ac-426f-9bc9-e5cdb93ddddd
+
+	/// Average discount percentage across order lines.
+	measure 'Average Discount' = AVERAGE ( 'FactSales'[Discount] )
+		formatString: 0.00%
+		displayFolder: Profitability
+		lineageTag: 06a7492d-5b15-453c-94ac-3522b5ce1a42
+
+	/// Average elapsed days between order date and ship date.
+	measure 'Average Shipping Days' = AVERAGEX ( 'FactSales', DATEDIFF ( 'FactSales'[Order Date], 'FactSales'[Ship Date], DAY ) )
+		formatString: #,##0.00
+		displayFolder: Shipping
+		lineageTag: 4af3d872-ee7c-4f84-8c83-d6c29b7ad268
+
+	/// Year-to-date sales using the active order-date relationship.
+	measure 'Sales YTD' = TOTALYTD ( [Total Sales], 'DimDate'[Date] )
+		formatString: $#,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: b5301505-fe00-4e82-a318-7f8abce22382
+
+	/// Sales for the equivalent prior-year period using DimDate.
+	measure 'Sales Previous Year' = CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( 'DimDate'[Date] ) )
+		formatString: $#,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: 400c64eb-ddfd-4032-b578-b973e8645259
+
+	/// Absolute year-over-year change in sales.
+	measure 'Sales YoY' = [Total Sales] - [Sales Previous Year]
+		formatString: $#,##0.00
+		displayFolder: Time Intelligence
+		lineageTag: 139aaf22-9bb7-4495-b247-5203dbdf1f44
+
+	/// Percentage year-over-year change in sales.
+	measure 'Sales YoY %' = DIVIDE ( [Sales YoY], [Sales Previous Year] )
+		formatString: 0.00%
+		displayFolder: Time Intelligence
+		lineageTag: f37f05b6-90cb-471f-bf35-1e1ee2f04f99
+
+	/// Sales evaluated through the inactive ship-date relationship.
+	measure 'Sales by Ship Date' = CALCULATE ( [Total Sales], USERELATIONSHIP ( 'DimDate'[Date], 'FactSales'[Ship Date] ) )
+		formatString: $#,##0.00
+		displayFolder: Shipping
+		lineageTag: d52ec4f1-9bca-4fb0-a977-1930c7b4ac16
+
+	/// Distinct active customers in the equivalent prior-year period.
+	measure 'Customer Previous Year' = CALCULATE ( [Customer Count], SAMEPERIODLASTYEAR ( 'DimDate'[Date] ) )
+		formatString: #,##0
+		displayFolder: Customer Analysis
+		lineageTag: 2a8f9c0d-4b1e-4e64-9c72-7d3a5b6f8e10
+
+	/// Absolute year-over-year change in distinct active customers.
+	measure 'Customer Growth' = [Customer Count] - [Customer Previous Year]
+		formatString: #,##0
+		displayFolder: Customer Analysis
+		lineageTag: 5d7e1a3c-9b2f-46d8-a0c4-1e6f8b3d9a27
+
+	/// Percentage year-over-year change in distinct active customers.
+	measure 'Customer Growth %' = DIVIDE ( [Customer Growth], [Customer Previous Year] )
+		formatString: 0.00%
+		displayFolder: Customer Analysis
+		lineageTag: 8c4e2b7f-1d6a-49f0-b3a5-7e9d2c6b1f84
+
+	column 'Row ID'
+		dataType: int64
+		isHidden
+		lineageTag: d4908243-f0ba-454f-b501-275c2045d4a4
+		summarizeBy: none
+		sourceColumn: Row ID
+
+	column 'Order ID'
+		dataType: string
+		lineageTag: 8fa227b9-db49-4c0e-a319-afda22b8030d
+		summarizeBy: none
+		sourceColumn: Order ID
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: c691fb12-9e35-42a4-881d-44a7408b9904
+		summarizeBy: none
+		sourceColumn: Order Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Ship Date'
+		dataType: dateTime
+		isHidden
+		formatString: Long Date
+		lineageTag: fac995fc-d465-435b-8d4a-0cd72c6a2d10
+		summarizeBy: none
+		sourceColumn: Ship Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Ship Mode'
+		dataType: string
+		isHidden
+		lineageTag: ea304f89-7106-47c0-b913-41fec5d3789b
+		summarizeBy: none
+		sourceColumn: Ship Mode
+
+	column 'Customer ID'
+		dataType: string
+		isHidden
+		lineageTag: 384e43b7-fd6b-4745-bf97-8e0be62a4f4f
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+	column 'Product ID'
+		dataType: string
+		isHidden
+		lineageTag: c03821fc-5330-4a10-8c5c-b54825ce70d7
+		summarizeBy: none
+		sourceColumn: Product ID
+
+	column GeographyKey
+		dataType: string
+		isHidden
+		lineageTag: bd42e960-21bd-4bb0-a9c5-fd94f178a8ed
+		summarizeBy: none
+		sourceColumn: GeographyKey
+
+	column Sales
+		dataType: decimal
+		isHidden
+		formatString: $#,##0.00
+		lineageTag: f2be8fee-201f-4984-b04e-10371c8d645d
+		summarizeBy: sum
+		sourceColumn: Sales
+
+	column Quantity
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: 01402493-a2a2-44f1-a236-076a34273ff7
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+	column Discount
+		dataType: double
+		isHidden
+		formatString: 0.00%
+		lineageTag: 221520c4-d763-4d20-9bca-7d7d19a0d3fd
+		summarizeBy: sum
+		sourceColumn: Discount
+
+		annotation SummarizationSetBy = Automatic
+
+	column Profit
+		dataType: decimal
+		isHidden
+		formatString: $#,##0.00
+		lineageTag: b5ea15f5-c677-49a5-a2d0-b8fb0e28d69c
+		summarizeBy: sum
+		sourceColumn: Profit
+
+	partition FactSales = m
+		mode: import
+		source =
+				let
+					AddedGeographyKey = Table.AddColumn(SuperstoreSource, "GeographyKey", each [Country] & "|" & [Region] & "|" & [State] & "|" & [City] & "|" & [#"Postal Code"], type text),
+					SelectedColumns = Table.SelectColumns(AddedGeographyKey, {"Row ID", "Order ID", "Order Date", "Ship Date", "Ship Mode", "Customer ID", "Product ID", "GeographyKey", "Sales", "Quantity", "Discount", "Profit"})
+				in
+					SelectedColumns
+

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "a1b2c3d4e5f60718293a",
+  "displayName": "Product Performance",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "visualInteractions": [
+    {
+      "source": "20000000000000000003",
+      "target": "20000000000000000006",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000004",
+      "target": "20000000000000000006",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000005",
+      "target": "20000000000000000006",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000003",
+      "target": "20000000000000000009",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000004",
+      "target": "20000000000000000009",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000005",
+      "target": "20000000000000000009",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000003",
+      "target": "20000000000000000010",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000004",
+      "target": "20000000000000000010",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000005",
+      "target": "20000000000000000010",
+      "type": "DataFilter"
+    },
+    {
+      "source": "20000000000000000006",
+      "target": "20000000000000000008",
+      "type": "HighlightFilter"
+    }
+  ]
+}

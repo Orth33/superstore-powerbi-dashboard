@@ -1,0 +1,19 @@
+/// Shipping mode dimension at one row per shipping mode for delivery analysis.
+table DimShipMode
+	lineageTag: 061fa1dc-1e85-4161-9c88-a6c3e7798bcc
+
+	column 'Ship Mode'
+		dataType: string
+		lineageTag: 5b0b3f2c-485f-4c4c-a1b3-bb6568284a2d
+		summarizeBy: none
+		sourceColumn: Ship Mode
+
+	partition DimShipMode = m
+		mode: import
+		source =
+				let
+					SelectedColumn = Table.SelectColumns(SuperstoreSource, {"Ship Mode"}),
+					DistinctModes = Table.Distinct(SelectedColumn)
+				in
+					DistinctModes
+

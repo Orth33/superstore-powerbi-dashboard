@@ -1,0 +1,51 @@
+/// Geography dimension at one row per country, region, state, city, and postal code for geographic slicing.
+table DimGeography
+	lineageTag: ad347ffc-e2cd-4b1b-b320-6cc5002135b4
+
+	column GeographyKey
+		dataType: string
+		lineageTag: 7ee92e46-df01-4384-af79-e684fdda17bf
+		summarizeBy: none
+		sourceColumn: GeographyKey
+
+	column Country
+		dataType: string
+		lineageTag: 14d3d15a-6851-4560-9035-e0c955f557a9
+		summarizeBy: none
+		sourceColumn: Country
+
+	column Region
+		dataType: string
+		lineageTag: b4f68e1b-71e1-4c14-bb01-a6491252469b
+		summarizeBy: none
+		sourceColumn: Region
+
+	column State
+		dataType: string
+		lineageTag: 01b04d05-09c1-4299-9c4c-aac8050baaf7
+		summarizeBy: none
+		sourceColumn: State
+
+	column City
+		dataType: string
+		lineageTag: 6c10965d-464f-4fb0-87d0-32191d3e4aba
+		summarizeBy: none
+		sourceColumn: City
+
+	column 'Postal Code'
+		dataType: string
+		lineageTag: 19b9368a-9735-45bc-a013-7006867577db
+		summarizeBy: none
+		sourceColumn: Postal Code
+
+	partition DimGeography = m
+		mode: import
+		source =
+				let
+					SelectedColumns = Table.SelectColumns(SuperstoreSource, {"Country", "Region", "State", "City", "Postal Code"}),
+					DistinctLocations = Table.Distinct(SelectedColumns),
+					AddedGeographyKey = Table.AddColumn(DistinctLocations, "GeographyKey", each [Country] & "|" & [Region] & "|" & [State] & "|" & [City] & "|" & [#"Postal Code"], type text),
+					ReorderedColumns = Table.ReorderColumns(AddedGeographyKey, {"GeographyKey", "Country", "Region", "State", "City", "Postal Code"})
+				in
+					ReorderedColumns
+

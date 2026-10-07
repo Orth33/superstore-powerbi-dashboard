@@ -1,0 +1,31 @@
+/// Customer dimension at one row per Customer ID, including the customer name and business segment.
+table DimCustomer
+	lineageTag: 24715654-ab23-443e-9bcb-a49fbbdf7d34
+
+	column 'Customer ID'
+		dataType: string
+		lineageTag: 0d781f1a-dea5-478a-bd40-04cc9a22c644
+		summarizeBy: none
+		sourceColumn: Customer ID
+
+	column 'Customer Name'
+		dataType: string
+		lineageTag: 84685a3d-77be-4f50-8f8f-45f3ca3c9449
+		summarizeBy: none
+		sourceColumn: Customer Name
+
+	column Segment
+		dataType: string
+		lineageTag: 7e9f562c-24be-4b9c-b643-aee5f8eda4ab
+		summarizeBy: none
+		sourceColumn: Segment
+
+	partition DimCustomer = m
+		mode: import
+		source =
+				let
+					SelectedColumns = Table.SelectColumns(SuperstoreSource, {"Customer ID", "Customer Name", "Segment"}),
+					DistinctCustomers = Table.Distinct(SelectedColumns, {"Customer ID"})
+				in
+					DistinctCustomers
+

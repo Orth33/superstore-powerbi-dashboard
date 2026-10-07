@@ -1,0 +1,25 @@
+relationship FactSales_OrderDate_DimDate
+	fromColumn: FactSales.'Order Date'
+	toColumn: DimDate.Date
+
+relationship FactSales_ShipDate_DimDate
+	isActive: false
+	fromColumn: FactSales.'Ship Date'
+	toColumn: DimDate.Date
+
+relationship FactSales_Customer_DimCustomer
+	fromColumn: FactSales.'Customer ID'
+	toColumn: DimCustomer.'Customer ID'
+
+relationship FactSales_Product_DimProduct
+	fromColumn: FactSales.'Product ID'
+	toColumn: DimProduct.'Product ID'
+
+relationship FactSales_Geography_DimGeography
+	fromColumn: FactSales.GeographyKey
+	toColumn: DimGeography.GeographyKey
+
+relationship FactSales_ShipMode_DimShipMode
+	fromColumn: FactSales.'Ship Mode'
+	toColumn: DimShipMode.'Ship Mode'
+

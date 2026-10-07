@@ -1,0 +1,21 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["DimDate","DimCustomer","DimProduct","DimGeography","DimShipMode","FactSales","SourceFilePath","SuperstoreSource"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table DimDate
+ref table DimCustomer
+ref table DimProduct
+ref table DimGeography
+ref table DimShipMode
+ref table FactSales
+

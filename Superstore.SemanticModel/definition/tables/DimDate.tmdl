@@ -1,0 +1,105 @@
+/// Contiguous calendar covering both order-date and ship-date roles for time intelligence.
+table DimDate
+	lineageTag: 850d602c-16e1-46ea-91ef-37f26be2da98
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		formatString: yyyy-MM-dd
+		lineageTag: 1bbcd2fd-647a-4249-bbd9-0abae63027de
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		lineageTag: a361cc4e-2396-4f92-aba4-d636947d3533
+		summarizeBy: none
+		sourceColumn: Year
+
+	column Quarter
+		dataType: string
+		lineageTag: d7e58d56-9a16-4491-ac10-7ebda812461f
+		summarizeBy: none
+		sourceColumn: Quarter
+
+	column 'Quarter Number'
+		dataType: int64
+		isHidden
+		lineageTag: 27177453-be39-40f3-b43e-dd7fb1b65142
+		summarizeBy: none
+		sourceColumn: Quarter Number
+
+	column Month
+		dataType: string
+		lineageTag: 65ad0936-ca4f-449a-8cd4-85fc44ab7d90
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: 'Month Number'
+
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: e401aabb-b67b-4e4c-b4e9-abf5f6722f3b
+		summarizeBy: none
+		sourceColumn: Month Number
+
+	column Month-Year
+		dataType: string
+		lineageTag: fb225e1c-96d1-4551-a54b-032c31de3346
+		summarizeBy: none
+		sourceColumn: Month-Year
+		sortByColumn: 'Year Month Number'
+
+	column 'Year Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: 34c54598-616e-48fd-9026-13c9847ac1b4
+		summarizeBy: none
+		sourceColumn: Year Month Number
+
+	column Day
+		dataType: int64
+		isHidden
+		lineageTag: c84a5621-5fb1-4e5b-97f4-248cb24a9fe6
+		summarizeBy: none
+		sourceColumn: Day
+
+	column 'Day of Week'
+		dataType: string
+		lineageTag: a496b43e-b2da-43d4-85b0-a7cdea6d9673
+		summarizeBy: none
+		sourceColumn: Day of Week
+		sortByColumn: 'Day of Week Number'
+
+	column 'Day of Week Number'
+		dataType: int64
+		isHidden
+		lineageTag: 67bd4ab9-889d-4a90-bf93-211d40cdef9a
+		summarizeBy: none
+		sourceColumn: Day of Week Number
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+					AllDates = List.Combine({Table.Column(SuperstoreSource, "Order Date"), Table.Column(SuperstoreSource, "Ship Date")}),
+					MinDate = List.Min(AllDates),
+					MaxDate = List.Max(AllDates),
+					DateList = List.Dates(MinDate, Duration.Days(MaxDate - MinDate) + 1, #duration(1, 0, 0, 0)),
+					DateTable = Table.FromList(DateList, Splitter.SplitByNothing(), {"Date"}),
+					TypedDate = Table.TransformColumnTypes(DateTable, {{"Date", type date}}),
+					AddedYear = Table.AddColumn(TypedDate, "Year", each Date.Year([Date]), Int64.Type),
+					AddedQuarterNumber = Table.AddColumn(AddedYear, "Quarter Number", each Date.QuarterOfYear([Date]), Int64.Type),
+					AddedQuarter = Table.AddColumn(AddedQuarterNumber, "Quarter", each "Q" & Text.From([#"Quarter Number"]), type text),
+					AddedMonthNumber = Table.AddColumn(AddedQuarter, "Month Number", each Date.Month([Date]), Int64.Type),
+					AddedMonth = Table.AddColumn(AddedMonthNumber, "Month", each Date.MonthName([Date], "en-US"), type text),
+					AddedYearMonthNumber = Table.AddColumn(AddedMonth, "Year Month Number", each Date.Year([Date]) * 100 + Date.Month([Date]), Int64.Type),
+					AddedMonthYear = Table.AddColumn(AddedYearMonthNumber, "Month-Year", each Date.ToText([Date], "yyyy-MM"), type text),
+					AddedDay = Table.AddColumn(AddedMonthYear, "Day", each Date.Day([Date]), Int64.Type),
+					AddedDayOfWeekNumber = Table.AddColumn(AddedDay, "Day of Week Number", each Date.DayOfWeek([Date], Day.Monday) + 1, Int64.Type),
+					AddedDayOfWeek = Table.AddColumn(AddedDayOfWeekNumber, "Day of Week", each Date.DayOfWeekName([Date], "en-US"), type text)
+				in
+					AddedDayOfWeek
+

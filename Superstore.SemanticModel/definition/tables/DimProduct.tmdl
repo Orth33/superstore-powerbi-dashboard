@@ -1,0 +1,41 @@
+/// Product dimension at one row per Product ID with deterministic canonical name, category, and sub-category attributes.
+table DimProduct
+	lineageTag: 68dc36ca-26ef-4fdf-b611-ab2793ada40d
+
+	column 'Product ID'
+		dataType: string
+		lineageTag: b989903d-1aa4-4f76-9b35-5021d863c83a
+		summarizeBy: none
+		sourceColumn: Product ID
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: 6ec73433-ece4-4b92-b27c-af730978fc3e
+		summarizeBy: none
+		sourceColumn: Product Name
+
+	column Category
+		dataType: string
+		lineageTag: 4bf0dfff-2a0a-4fec-80af-a984cbfd4e2f
+		summarizeBy: none
+		sourceColumn: Category
+
+	column Sub-Category
+		dataType: string
+		lineageTag: 30961958-3489-4614-8bae-162695f7d3b0
+		summarizeBy: none
+		sourceColumn: Sub-Category
+
+	partition DimProduct = m
+		mode: import
+		source =
+				let
+					GroupedProducts = Table.Group(SuperstoreSource, {"Product ID"}, {
+						{"Product Name", each List.First(List.Sort(List.Distinct([#"Product Name"]))), type text},
+						{"Category", each List.First(List.Sort(List.Distinct([Category]))), type text},
+						{"Sub-Category", each List.First(List.Sort(List.Distinct([#"Sub-Category"]))), type text}
+					}),
+					ReorderedColumns = Table.ReorderColumns(GroupedProducts, {"Product ID", "Product Name", "Category", "Sub-Category"})
+				in
+					ReorderedColumns
+
